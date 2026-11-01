@@ -2,7 +2,6 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const router = express.Router();
 const pool = require("../db");
-const SUPER_ADMIN_EMAIL = "dong.yoon.lee616@gmail.com";
 const crypto = require("crypto");
 const { Resend } = require("resend");
 const { logAccount } = require("../utils/discord-log");
@@ -155,10 +154,7 @@ router.post("/register", redirectIfLoggedIn, async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const role =
-      trimmedEmail === SUPER_ADMIN_EMAIL
-        ? "superadmin"
-        : "user";
+    const role = "user";
 
     const userResult = await pool.query(
       `
