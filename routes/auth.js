@@ -204,20 +204,12 @@ router.post("/register", redirectIfLoggedIn, async (req, res) => {
   }
 });
 
+// 로그인 페이지
 router.get("/login", redirectIfLoggedIn, (req, res) => {
   res.render("auth/login", {
     school: null,
     error: null,
-    form: {
-      email: "",
-    },
-  });
-
-  router.get("/login", (req, res) => {
-    res.render("auth/login", {
-      error: null,
-      passwordReset: req.query.passwordReset === "1",
-    });
+    passwordReset: req.query.passwordReset === "1",
   });
 });
 
@@ -291,11 +283,8 @@ router.post("/login", redirectIfLoggedIn, async (req, res) => {
       return res.redirect("/admin");
     }
 
-res.redirect("/");
-
     res.redirect("/");
-
-    res.redirect("/");
+    
   } catch (error) {
     console.error(error);
     res.status(500).send("로그인 중 오류가 발생했습니다.");
