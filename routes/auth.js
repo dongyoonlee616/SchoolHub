@@ -210,6 +210,9 @@ router.get("/login", redirectIfLoggedIn, (req, res) => {
     school: null,
     error: null,
     passwordReset: req.query.passwordReset === "1",
+    form: {
+      email: "",
+    },
   });
 });
 
@@ -284,7 +287,7 @@ router.post("/login", redirectIfLoggedIn, async (req, res) => {
     }
 
     res.redirect("/");
-    
+
   } catch (error) {
     console.error(error);
     res.status(500).send("로그인 중 오류가 발생했습니다.");
