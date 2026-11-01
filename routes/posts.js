@@ -642,7 +642,7 @@ router.get("/schools/:slug/posts/:id/edit", async (req, res) => {
       [id, school.id]
     );
 
-    if (postResult.rows.length === 0) {
+    if (result.rows.length === 0) {
         return res.status(404).render("404", {
             school,
             title: "게시글을 찾을 수 없습니다.",
