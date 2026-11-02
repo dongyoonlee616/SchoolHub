@@ -1369,7 +1369,7 @@ router.post("/admin/schools", requireSuperAdmin, async (req, res) => {
 
     await client.query("COMMIT");
 
-    res.redirect("/admin/schools");
+    res.redirect("/superadmin/schools");;
   } catch (error) {
     await client.query("ROLLBACK");
 
@@ -1461,7 +1461,7 @@ router.post("/admin/schools/:id/edit", requireSuperAdmin, async (req, res) => {
       [name, slug, isActive, id]
     );
 
-    res.redirect("/admin/schools");
+    res.redirect("/superadmin/schools");;
   } catch (error) {
     console.error(error);
 
@@ -1495,7 +1495,7 @@ router.post("/admin/schools/:id/toggle", requireSuperAdmin, async (req, res) => 
       [id]
     );
 
-    res.redirect("/admin/schools");
+    res.redirect("/superadmin/schools");;
   } catch (error) {
     console.error(error);
     res.status(500).send("학교 상태를 변경하는 중 오류가 발생했습니다.");
@@ -1528,7 +1528,7 @@ router.post("/admin/schools/:id/delete", requireSuperAdmin, async (req, res) => 
 
     if (total > 0) {
       return res.redirect(
-        "/admin/schools?error=" +
+        "/superadmin/schools?error=" +
           encodeURIComponent(
             "게시글, 댓글, 공지, 분실물이 있는 학교는 삭제할 수 없습니다. 대신 비활성화를 사용하세요."
           )
@@ -1547,7 +1547,7 @@ router.post("/admin/schools/:id/delete", requireSuperAdmin, async (req, res) => 
       detail: "최고 관리자가 학교를 삭제했습니다.",
     });
 
-    res.redirect("/admin/schools");
+    res.redirect("/superadmin/schools");;
   } catch (error) {
     console.error(error);
     res.status(500).send("학교를 삭제하는 중 오류가 발생했습니다.");
