@@ -23,21 +23,21 @@
     <section class="admin-board-tools">
       <div class="category-filter">
         <a
-          href="/admin/schools/<%= school.slug %>/lost-items"
+          href="/superadmin/schools/<%= school.slug %>/lost-items"
           class="filter-chip <%= !selectedStatus ? 'active' : '' %>"
         >
           전체
         </a>
 
         <a
-          href="/admin/schools/<%= school.slug %>/lost-items?status=approved"
+          href="/superadmin/schools/<%= school.slug %>/lost-items?status=approved"
           class="filter-chip <%= selectedStatus === 'approved' ? 'active' : '' %>"
         >
           승인됨
         </a>
 
         <a
-          href="/admin/schools/<%= school.slug %>/lost-items?status=pending"
+          href="/superadmin/schools/<%= school.slug %>/lost-items?status=pending"
           class="filter-chip <%= selectedStatus === 'pending' ? 'active' : '' %>"
         >
           승인 대기
@@ -46,7 +46,7 @@
 
       <form
         class="admin-board-search"
-        action="/admin/schools/<%= school.slug %>/lost-items"
+        action="/superadmin/schools/<%= school.slug %>/lost-items"
         method="GET"
         data-allow-multiple-submit="true"
       >
@@ -66,7 +66,7 @@
 
         <% if (selectedStatus || searchQuery) { %>
           <a
-            href="/admin/schools/<%= school.slug %>/lost-items"
+            href="/superadmin/schools/<%= school.slug %>/lost-items"
             class="reset-search"
           >
             초기화
@@ -83,7 +83,7 @@
       <div class="admin-board-list">
         <% items.forEach(item => { %>
           <a
-            href="/admin/schools/<%= school.slug %>/lost-items/<%= item.id %>"
+            href="/superadmin/schools/<%= school.slug %>/lost-items/<%= item.id %>"
             class="admin-board-row"
           >
             <div>

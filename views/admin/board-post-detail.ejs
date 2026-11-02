@@ -35,7 +35,7 @@
           </div>
         </div>
 
-        <form action="/admin/schools/<%= school.slug %>/board/posts/<%= post.id %>/delete" method="POST">
+        <form action="/superadmin/schools/<%= school.slug %>/board/posts/<%= post.id %>/delete" method="POST">
           <button type="submit" class="danger-admin-button">
             게시글 삭제
           </button>
@@ -80,7 +80,7 @@
                 <p><%= comment.content %></p>
               </div>
 
-              <form action="/admin/schools/<%= school.slug %>/board/comments/<%= comment.id %>/delete" method="POST">
+              <form action="/superadmin/schools/<%= school.slug %>/board/comments/<%= comment.id %>/delete" method="POST">
                 <button type="submit" class="danger-small-button">
                   삭제
                 </button>

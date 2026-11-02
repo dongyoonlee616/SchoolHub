@@ -826,7 +826,7 @@ router.get("/superadmin/schools/:slug/board", requireSuperAdmin, async (req, res
 });
 
 // 학교별 관리자 게시글 상세
-router.get("/admin/schools/:slug/board/posts/:id", requireSuperAdmin, async (req, res) => {
+router.get("/superadmin/schools/:slug/board/posts/:id", requireSuperAdmin, async (req, res) => {
   try {
     const { slug, id } = req.params;
     const school = await getAdminSchoolBySlug(slug);
@@ -877,7 +877,7 @@ router.get("/admin/schools/:slug/board/posts/:id", requireSuperAdmin, async (req
 });
 
 // 학교별 관리자 게시글 삭제
-router.post("/admin/schools/:slug/board/posts/:id/delete", requireSuperAdmin, async (req, res) => {
+router.post("/superadmin/schools/:slug/board/posts/:id/delete", requireSuperAdmin, async (req, res) => {
   try {
     const { slug, id } = req.params;
     const school = await getAdminSchoolBySlug(slug);
@@ -906,7 +906,7 @@ router.post("/admin/schools/:slug/board/posts/:id/delete", requireSuperAdmin, as
 });
 
 // 학교별 관리자 댓글 삭제
-router.post("/admin/schools/:slug/board/comments/:id/delete", requireSuperAdmin, async (req, res) => {
+router.post("/superadmin/schools/:slug/board/comments/:id/delete", requireSuperAdmin, async (req, res) => {
   try {
     const { slug, id } = req.params;
     const school = await getAdminSchoolBySlug(slug);

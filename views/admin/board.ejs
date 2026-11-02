@@ -21,20 +21,20 @@
 
     <section class="admin-board-tools">
       <div class="category-filter">
-        <a href="/admin/schools/<%= school.slug %>/board" class="filter-chip">
+        <a href="/superadmin/schools/<%= school.slug %>/board" class="filter-chip">
           전체
         </a>
 
-        <a href="/admin/schools/<%= school.slug %>/board?status=approved" class="filter-chip">
+        <a href="/superadmin/schools/<%= school.slug %>/board?status=approved" class="filter-chip">
           승인됨
         </a>
 
-        <a href="/admin/schools/<%= school.slug %>/board?status=pending" class="filter-chip">
+        <a href="/superadmin/schools/<%= school.slug %>/board?status=pending" class="filter-chip">
           승인 대기
         </a>
       </div>
 
-      <form class="admin-board-search" action="/admin/schools/<%= school.slug %>/board" method="GET" class="admin-board-search" data-allow-multiple-submit="true">
+      <form class="admin-board-search" action="/superadmin/schools/<%= school.slug %>/board" method="GET" class="admin-board-search" data-allow-multiple-submit="true">
         <% if (selectedStatus) { %>
           <input type="hidden" name="status" value="<%= selectedStatus %>" />
         <% } %>
@@ -50,7 +50,7 @@
         <button type="submit">검색</button>
 
         <% if (selectedStatus || searchQuery) { %>
-          <a href="/admin/board" class="reset-search">초기화</a>
+          <a href="/superadmin/schools/<%= school.slug %>/board" class="reset-search">초기화</a>
         <% } %>
       </form>
     </section>
@@ -62,7 +62,7 @@
     <% } else { %>
       <div class="admin-board-list">
         <% posts.forEach(post => { %>
-          <a href="/admin/schools/<%= school.slug %>/board/posts/<%= post.id %>" class="admin-board-row">
+          <a href="/superadmin/schools/<%= school.slug %>/board/posts/<%= post.id %>" class="admin-board-row">
             <div>
               <div class="admin-board-row-meta">
                 <span><%= post.school_name %></span>
