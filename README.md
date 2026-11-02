@@ -5,7 +5,7 @@ SchoolHub는 학교별 커뮤니티를 운영할 수 있는 웹 플랫폼입니�
 
 ## 배포 주소
 
-https://schoolhub-n2v3.onrender.com
+https://schoolhub.pe.kr/
 
 ## 주요 기능
 
