@@ -350,12 +350,6 @@ router.post("/forgot-password", async (req, res) => {
       [tokenHash, expiresAt, user.id]
     );
 
-    await logAccount(req, {
-      action: "비밀번호 재설정",
-      target: `유저 ID: ${user.id}`,
-      detail: "사용자가 이메일 링크를 통해 비밀번호를 재설정했습니다.",
-    });
-
     const baseUrl =
       process.env.APP_BASE_URL ||
       `${req.protocol}://${req.get("host")}`;
@@ -363,6 +357,12 @@ router.post("/forgot-password", async (req, res) => {
     const resetUrl = `${baseUrl}/reset-password?token=${token}`;
 
     await sendPasswordResetEmail(user.email, resetUrl);
+
+    await logAccount(req, {
+      action: "비밀번호 재설정 이메일 발송",
+      target: `유저 ID: ${user.id}`,
+      detail: "비밀번호 재설정 링크를 이메일로 발송했습니다. 비밀번호는 아직 변경되지 않았습니다.",
+    });
 
     res.render("auth/forgot-password", {
       error: null,
@@ -460,21 +460,27 @@ router.post("/reset-password", async (req, res) => {
     const user = userResult.rows[0];
     const passwordHash = await bcrypt.hash(newPassword, 10);
 
-    await pool.query(
+    const updateResult = await pool.query(
       `
       UPDATE app_users
       SET password_hash = $1,
           password_reset_token_hash = NULL,
           password_reset_expires_at = NULL
       WHERE id = $2
+        AND password_reset_token_hash = $3
+        AND password_reset_expires_at > CURRENT_TIMESTAMP
       `,
-      [passwordHash, user.id]
+      [passwordHash, user.id, tokenHash]
     );
 
+    if (updateResult.rowCount !== 1) {
+      return res.status(400).send("이미 사용되었거나 만료된 재설정 링크입니다.");
+    }
+
     await logAccount(req, {
-      action: "비밀번호 재설정",
+      action: "비밀번호 재설정 완료",
       target: `유저 ID: ${user.id}`,
-      detail: "사용자가 기존 비밀번호를 통해 비밀번호를 재설정했습니다.",
+      detail: "사용자가 이메일 링크를 통해 비밀번호를 재설정했습니다.",
     });
 
     res.redirect("/login?passwordReset=1");

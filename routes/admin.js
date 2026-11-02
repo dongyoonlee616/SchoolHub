@@ -343,15 +343,19 @@ router.post("/admin/schools/:slug/posts/:id/approve", requireAdmin, async (req, 
       return renderAdminSchoolNotFound(res);
     }
 
-    await pool.query(
+    const updateResult = await pool.query(
       `
       UPDATE posts
       SET status = 'approved',
           approved_at = CURRENT_TIMESTAMP
-      WHERE id = $1 AND school_id = $2
+      WHERE id = $1 AND school_id = $2 AND status = 'pending'
       `,
       [id, school.id]
     );
+
+    if (updateResult.rowCount !== 1) {
+      return res.status(409).send("존재하지 않거나 이미 처리된 항목입니다.");
+    }
 
     await logApproval(req, {
       action: "게시글 승인",
@@ -375,7 +379,7 @@ router.post("/admin/schools/:slug/posts/:id/reject", requireAdmin, async (req, r
     const school = await getAdminSchoolBySlug(slug);
     if (!school) return renderAdminSchoolNotFound(res);
 
-    await pool.query(
+    const updateResult = await pool.query(
       `
       UPDATE posts
       SET status = 'rejected',
@@ -387,6 +391,10 @@ router.post("/admin/schools/:slug/posts/:id/reject", requireAdmin, async (req, r
       `,
       [id, school.id]
     );
+
+    if (updateResult.rowCount !== 1) {
+      return res.status(409).send("존재하지 않거나 이미 처리된 항목입니다.");
+    }
 
     await logReject(req, {
       action: "게시글 거절",
@@ -592,10 +600,19 @@ router.post("/admin/schools/:slug/notices/:id/delete", requireAdmin, async (req,
       return renderAdminSchoolNotFound(res);
     }
 
-    await pool.query(
+    const deleteResult = await pool.query(
       "DELETE FROM notices WHERE id = $1 AND school_id = $2",
       [id, school.id]
     );
+
+    if (deleteResult.rowCount === 1) {
+      await logDelete(req, {
+        action: "공지사항 삭제",
+        school,
+        target: `공지사항 ID: ${id}`,
+        detail: "관리자가 공지사항을 삭제했습니다.",
+      });
+    }
 
     res.redirect(`/admin/schools/${school.slug}/notices`);
   } catch (error) {
@@ -702,15 +719,19 @@ router.post("/admin/schools/:slug/comments/:id/approve", requireAdmin, async (re
       return renderAdminSchoolNotFound(res);
     }
 
-    await pool.query(
+    const updateResult = await pool.query(
       `
       UPDATE comments
       SET status = 'approved',
           approved_at = CURRENT_TIMESTAMP
-      WHERE id = $1 AND school_id = $2
+      WHERE id = $1 AND school_id = $2 AND status = 'pending'
       `,
       [id, school.id]
     );
+
+    if (updateResult.rowCount !== 1) {
+      return res.status(409).send("존재하지 않거나 이미 처리된 항목입니다.");
+    }
 
     await logApproval(req, {
       action: "댓글 승인",
@@ -734,7 +755,7 @@ router.post("/admin/schools/:slug/comments/:id/reject", requireAdmin, async (req
     const school = await getAdminSchoolBySlug(slug);
     if (!school) return renderAdminSchoolNotFound(res);
 
-    await pool.query(
+    const updateResult = await pool.query(
       `
       UPDATE comments
       SET status = 'rejected'
@@ -744,6 +765,10 @@ router.post("/admin/schools/:slug/comments/:id/reject", requireAdmin, async (req
       `,
       [id, school.id]
     );
+
+    if (updateResult.rowCount !== 1) {
+      return res.status(409).send("존재하지 않거나 이미 처리된 항목입니다.");
+    }
 
     await logReject(req, {
       action: "댓글 거절",
@@ -886,10 +911,14 @@ router.post("/superadmin/schools/:slug/board/posts/:id/delete", requireSuperAdmi
       return renderAdminSchoolNotFound(res);
     }
 
-    await pool.query(
+    const deleteResult = await pool.query(
       "DELETE FROM posts WHERE id = $1 AND school_id = $2",
       [id, school.id]
     );
+
+    if (deleteResult.rowCount !== 1) {
+      return res.status(404).send("게시글을 찾을 수 없습니다.");
+    }
 
     await logDelete(req, {
       action: "게시글 삭제",
@@ -898,7 +927,7 @@ router.post("/superadmin/schools/:slug/board/posts/:id/delete", requireSuperAdmi
       detail: "최고 관리자가 게시글을 삭제했습니다.",
     });
 
-    res.redirect(`/admin/schools/${school.slug}/board`);
+    res.redirect(`/superadmin/schools/${school.slug}/board`);
   } catch (error) {
     console.error(error);
     res.status(500).send("게시글 삭제 중 오류가 발생했습니다.");
@@ -927,6 +956,21 @@ router.post("/superadmin/schools/:slug/board/comments/:id/delete", requireSuperA
       [id, school.id]
     );
 
+    if (commentResult.rows.length === 0) {
+      return res.redirect(`/superadmin/schools/${school.slug}/board`);
+    }
+
+    const postId = commentResult.rows[0].post_id;
+
+    const deleteResult = await pool.query(
+      "DELETE FROM comments WHERE id = $1 AND school_id = $2",
+      [id, school.id]
+    );
+
+    if (deleteResult.rowCount !== 1) {
+      return res.status(404).send("댓글을 찾을 수 없습니다.");
+    }
+
     await logDelete(req, {
       action: "댓글 삭제",
       school,
@@ -934,18 +978,7 @@ router.post("/superadmin/schools/:slug/board/comments/:id/delete", requireSuperA
       detail: "최고 관리자가 댓글을 삭제했습니다.",
     });
 
-    if (commentResult.rows.length === 0) {
-      return res.redirect(`/admin/schools/${school.slug}/board`);
-    }
-
-    const postId = commentResult.rows[0].post_id;
-
-    await pool.query(
-      "DELETE FROM comments WHERE id = $1 AND school_id = $2",
-      [id, school.id]
-    );
-
-    res.redirect(`/admin/schools/${school.slug}/board/posts/${postId}`);
+    res.redirect(`/superadmin/schools/${school.slug}/board/posts/${postId}`);
   } catch (error) {
     console.error(error);
     res.status(500).send("댓글 삭제 중 오류가 발생했습니다.");
@@ -1037,15 +1070,19 @@ router.post("/admin/schools/:slug/lost-items/:id/approve", requireAdmin, async (
       return renderAdminSchoolNotFound(res);
     }
 
-    await pool.query(
+    const updateResult = await pool.query(
       `
       UPDATE lost_items
       SET status = 'approved',
           approved_at = CURRENT_TIMESTAMP
-      WHERE id = $1 AND school_id = $2
+      WHERE id = $1 AND school_id = $2 AND status = 'pending'
       `,
       [id, school.id]
     );
+
+    if (updateResult.rowCount !== 1) {
+      return res.status(409).send("존재하지 않거나 이미 처리된 항목입니다.");
+    }
 
     await logApproval(req, {
       action: "분실물 승인",
@@ -1176,7 +1213,7 @@ router.post(
         return renderAdminSchoolNotFound(res);
       }
 
-      await pool.query(
+      const deleteResult = await pool.query(
         `
         DELETE FROM lost_items
         WHERE id = $1
@@ -1184,6 +1221,10 @@ router.post(
         `,
         [id, school.id]
       );
+
+      if (deleteResult.rowCount !== 1) {
+        return res.status(404).send("분실물을 찾을 수 없습니다.");
+      }
 
       await logDelete(req, {
         action: "분실물 삭제",
@@ -1208,7 +1249,7 @@ router.post("/admin/schools/:slug/lost-items/:id/reject", requireAdmin, async (r
     const school = await getAdminSchoolBySlug(slug);
     if (!school) return renderAdminSchoolNotFound(res);
 
-    await pool.query(
+    const updateResult = await pool.query(
       `
       UPDATE lost_items
       SET status = 'rejected'
@@ -1218,6 +1259,10 @@ router.post("/admin/schools/:slug/lost-items/:id/reject", requireAdmin, async (r
       `,
       [id, school.id]
     );
+
+    if (updateResult.rowCount !== 1) {
+      return res.status(409).send("존재하지 않거나 이미 처리된 항목입니다.");
+    }
 
     await logReject(req, {
       action: "분실물 거절",
@@ -1490,7 +1535,11 @@ router.post("/admin/schools/:id/delete", requireSuperAdmin, async (req, res) => 
       );
     }
 
-    await pool.query("DELETE FROM schools WHERE id = $1", [id]);
+    const deleteResult = await pool.query("DELETE FROM schools WHERE id = $1", [id]);
+
+    if (deleteResult.rowCount !== 1) {
+      return res.status(404).send("학교를 찾을 수 없습니다.");
+    }
 
     await logDelete(req, {
       action: "학교 삭제",
@@ -1704,7 +1753,7 @@ router.post("/admin/schools/:slug/reports/:id/delete-post", requireAdmin, async 
 
     const report = reportResult.rows[0];
 
-    await pool.query(
+    const deleteResult = await pool.query(
       "DELETE FROM posts WHERE id = $1 AND school_id = $2",
       [report.post_id, school.id]
     );
@@ -1719,6 +1768,15 @@ router.post("/admin/schools/:slug/reports/:id/delete-post", requireAdmin, async 
       `,
       [id, school.id]
     );
+
+    if (deleteResult.rowCount === 1) {
+      await logDelete(req, {
+        action: "신고된 게시글 삭제",
+        school,
+        target: `게시글 ID: ${report.post_id}`,
+        detail: `관리자가 신고 ID ${id}를 통해 게시글을 삭제했습니다.`,
+      });
+    }
 
     res.redirect(`/admin/schools/${school.slug}/reports`);
   } catch (error) {
@@ -1837,8 +1895,9 @@ router.post("/admin/schools/:slug/reports/comment/:id/delete-comment", requireAd
 
     const report = reportResult.rows[0];
 
+    let deletedCount = 0;
     if (report.comment_id && report.post_id) {
-      await pool.query(
+      const deleteResult = await pool.query(
         `
         DELETE FROM comments
         WHERE id = $1
@@ -1846,6 +1905,7 @@ router.post("/admin/schools/:slug/reports/comment/:id/delete-comment", requireAd
         `,
         [report.comment_id, report.post_id]
       );
+      deletedCount = deleteResult.rowCount;
     }
 
     await pool.query(
@@ -1858,6 +1918,15 @@ router.post("/admin/schools/:slug/reports/comment/:id/delete-comment", requireAd
       `,
       [id, school.id]
     );
+
+    if (deletedCount === 1) {
+      await logDelete(req, {
+        action: "신고된 댓글 삭제",
+        school,
+        target: `댓글 ID: ${report.comment_id}`,
+        detail: `관리자가 신고 ID ${id}를 통해 댓글을 삭제했습니다.`,
+      });
+    }
 
     res.redirect(`/admin/schools/${school.slug}/reports`);
   } catch (error) {
@@ -2016,13 +2085,21 @@ router.post("/admin/support/:id/delete", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    await pool.query(
+    const deleteResult = await pool.query(
       `
       DELETE FROM support_tickets
       WHERE id = $1
       `,
       [id]
     );
+
+    if (deleteResult.rowCount === 1) {
+      await logDelete(req, {
+        action: "문의 삭제",
+        target: `문의 ID: ${id}`,
+        detail: "관리자가 문의를 삭제했습니다.",
+      });
+    }
 
     res.redirect("/admin/support");
   } catch (error) {
