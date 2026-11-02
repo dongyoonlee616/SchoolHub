@@ -1124,7 +1124,7 @@ router.get("/superadmin/schools/:slug/lost-items", requireSuperAdmin, async (req
 });
 
 // 학교별 관리자 분실물 상세
-router.get("/admin/schools/:slug/lost-items/:id", requireSuperAdmin, async (req, res) => {
+router.get("/superadmin/schools/:slug/lost-items/:id", requireSuperAdmin, async (req, res) => {
   try {
     const { slug, id } = req.params;
     const school = await getAdminSchoolBySlug(slug);
@@ -1148,7 +1148,7 @@ router.get("/admin/schools/:slug/lost-items/:id", requireSuperAdmin, async (req,
         title: "분실물을 찾을 수 없습니다.",
         message: "존재하지 않는 분실물입니다.",
         backLabel: "분실물 관리로 돌아가기",
-        backUrl: `/admin/schools/${school.slug}/lost-items`,
+        backUrl: `/superadmin/schools/${school.slug}/lost-items`,
       });
     }
 
