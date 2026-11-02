@@ -242,6 +242,13 @@ const migrations = [
       ADD COLUMN IF NOT EXISTS password_reset_expires_at TIMESTAMP;
     `,
   },
+  {
+    name: "20261102_01_make_post_password_optional",
+    sql: `
+      ALTER TABLE posts
+      ALTER COLUMN password_hash DROP NOT NULL;
+    `,
+  },
 ];
 
 async function createBaseTables() {
@@ -262,7 +269,7 @@ async function createBaseTables() {
       title VARCHAR(200) NOT NULL,
       content TEXT NOT NULL,
       nickname VARCHAR(50) NOT NULL,
-      password_hash TEXT NOT NULL,
+      password_hash TEXT,
       status VARCHAR(20) DEFAULT 'pending',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       approved_at TIMESTAMP,
